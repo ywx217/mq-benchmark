@@ -3,13 +3,13 @@ import gevent
 import bench_base
 import pymongo
 
-MONGO_HOST = '192.168.99.100'
 TEST_DATA = "test content"
 
 
 def parse_args():
     import argparse
     p = argparse.ArgumentParser()
+    p.add_argument('--host', '-h', type=str, default='192.168.99.100', help='mongodb host')
     p.add_argument('--port', '-p', type=int, default=32771, help='mongodb port')
     p.add_argument('--receivers', '-r', type=int, default=10, help='receiver count')
     p.add_argument('--senders', '-s', type=int, default=10, help='sender count')
@@ -21,7 +21,6 @@ class MongodbQueue(object):
     def __init__(self, name, namespace='queue', **mongodb_kwargs):
         conn = pymongo.Connection(**mongodb_kwargs)
         self.__db = conn[namespace][name]
-        self.__db.remove({})
         self.__db.create_index([('time', pymongo.ASCENDING)])
 
     def qsize(self):
@@ -66,7 +65,7 @@ class MongodbBench(bench_base.BenchBase):
 
 if __name__ == '__main__':
     args = parse_args()
-    MongodbBench(MONGO_HOST, args.port).start(
+    MongodbBench(args.host, args.port).start(
         bench_base.BenchCurve(args.senders, 0, 1),
         bench_base.BenchCurve(args.receivers, 0, 0),
     )

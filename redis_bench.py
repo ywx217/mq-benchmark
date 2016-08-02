@@ -3,13 +3,13 @@ import bench_base
 import redis
 
 # RedisQueue from blog: http://peter-hoffmann.com/2012/python-simple-queue-redis-queue.html
-REDIS_HOST = '192.168.99.100'
 TEST_DATA = "test content"
 
 
 def parse_args():
     import argparse
     p = argparse.ArgumentParser()
+    p.add_argument('--host', '-h', type=str, default='192.168.99.100', help='redis host')
     p.add_argument('--port', '-p', type=int, default=32771, help='redis port')
     p.add_argument('--receivers', '-r', type=int, default=10, help='receiver count')
     p.add_argument('--senders', '-s', type=int, default=10, help='sender count')
@@ -73,7 +73,7 @@ class RedisBench(bench_base.BenchBase):
 
 if __name__ == '__main__':
     args = parse_args()
-    RedisBench(REDIS_HOST, args.port).start(
+    RedisBench(args.host, args.port).start(
         bench_base.BenchCurve(args.senders, 0, 1),
         bench_base.BenchCurve(args.receivers, 0, 0),
     )
