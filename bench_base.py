@@ -24,6 +24,7 @@ class BenchBase(object):
         super(BenchBase, self).__init__()
         self._counter_lock = gevent.coros.BoundedSemaphore(1)
         self._counter = collections.Counter()
+        self._uniq_counter = collections.defaultdict(set)
         self._print_interval = 1.0
         self._running_flag = True
 
@@ -43,11 +44,23 @@ class BenchBase(object):
         self._counter_lock.release()
         return self._counter[key]
 
+    def record_uniq(self, key, uniq_field, remove=False):
+        if remove:
+            self._uniq_counter[key].discard(uniq_field)
+        else:
+            self._uniq_counter[key].add(uniq_field)
+
+    def set_record(self, key, value):
+        self._counter[key] = value
+
     def get_record(self, key):
         return self._counter[key]
 
+    def get_records(self):
+        return self._counter.items() + map(lambda x: (x[0], len(x[1])), self._uniq_counter.items())
+
     def print_record(self):
-        c = sorted(self._counter.items())
+        c = sorted(self.get_records())
         print '[%s] %s' % (
             time.strftime('%Y-%m-%d %H:%M:%S'),
             ' '.join(map(lambda x: '='.join(map(str, x)), c))
@@ -70,6 +83,9 @@ class BenchBase(object):
     def _add_signal_support(self):
         pass
 
+    def _addition_worker_on_start(self):
+        return ()
+
     def start(self, send_curve=None, recv_curve=None, print_interval=1.0):
         workers = []
         if send_curve:
@@ -81,6 +97,8 @@ class BenchBase(object):
         if print_interval > 0:
             self._print_interval = print_interval
             workers.append(gevent.spawn(self._print_loop))
+        for func in self._addition_worker_on_start():
+            workers.append(gevent.spawn(func))
         self._add_signal_support()
         gevent.joinall(workers)
 
