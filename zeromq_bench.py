@@ -12,6 +12,7 @@ from zeroactor import gate
 def parse_args():
     import argparse
     p = argparse.ArgumentParser()
+    p.add_argument('--ip', type=str, default=get_my_ip(), help='self host name')
     p.add_argument('--host', '-H', type=str, default='localhost', help='zmq rpc broker host')
     p.add_argument('--port', '-p', type=int, default=55666, help='zmq rpc broker port')
     p.add_argument('--receivers', '-r', type=int, default=10, help='receiver count')
@@ -60,12 +61,12 @@ class Receiver(gate.DealerRouterGate):
 
 
 class ZeroMQBench(bench_base.BenchBase):
-    def __init__(self, broker_ip, broker_port, test_data):
+    def __init__(self, my_ip, broker_ip, broker_port, test_data):
         super(ZeroMQBench, self).__init__()
         self._broker_addr = 'tcp://%s:%d' % (broker_ip, broker_port)
         self._data = test_data
-        self._sender = Sender(get_my_ip(), random.randint(10000, 30000))
-        self._recver = Receiver(get_my_ip(), random.randint(10000, 30000), self, self._broker_addr)
+        self._sender = Sender(my_ip, random.randint(10000, 30000))
+        self._recver = Receiver(my_ip, random.randint(10000, 30000), self, self._broker_addr)
         self._pool.spawn(self._recver._ping)
         self._pool.spawn(self._recver._run)
 
@@ -99,7 +100,7 @@ if __name__ == '__main__':
         test_data = queue_data.PACKED_DATA
     else:
         test_data = queue_data.STRUCTURE_DATA
-    ZeroMQBench(args.host, args.port, test_data).start(
+    ZeroMQBench(args.ip, args.host, args.port, test_data).start(
         bench_base.BenchCurve(args.senders, 0, 1),
         bench_base.BenchCurve(args.receivers, 0, 0.01),
     )

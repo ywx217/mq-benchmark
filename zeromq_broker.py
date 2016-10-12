@@ -12,6 +12,7 @@ from zeroactor import gate
 def parse_args():
     import argparse
     p = argparse.ArgumentParser()
+    p.add_argument('--ip', type=str, default=get_my_ip(), help='self host name')
     p.add_argument('--port', '-p', type=int, default=55666, help='broker port')
     return p.parse_args()
 
@@ -23,8 +24,8 @@ def get_my_ip():
 
 class Broker(gate.DealerRouterGate):
     # send workload to a random receiver
-    def __init__(self, port):
-        super(Broker, self).__init__(get_my_ip(), port)
+    def __init__(self, my_ip, port):
+        super(Broker, self).__init__(my_ip, port)
         self._registered_receivers = set()
         self._pending_queue = collections.deque()
 
@@ -49,4 +50,4 @@ class Broker(gate.DealerRouterGate):
 
 if __name__ == '__main__':
     args = parse_args()
-    Broker(args.port).run()
+    Broker(args.ip, args.port).run()
