@@ -11,6 +11,7 @@ RUN apt-get update \
 RUN pip install \
     redis \
     pymongo==2.8 \
+    pyzmq \
     msgpack-python
 
 WORKDIR /python

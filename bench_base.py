@@ -2,7 +2,8 @@ import collections
 import time
 import gevent
 import gevent.monkey
-import gevent.coros
+import gevent.pool
+import gevent.lock
 gevent.monkey.patch_all()
 
 
@@ -22,7 +23,8 @@ class BenchCurve(object):
 class BenchBase(object):
     def __init__(self):
         super(BenchBase, self).__init__()
-        self._counter_lock = gevent.coros.BoundedSemaphore(1)
+        self._counter_lock = gevent.lock.BoundedSemaphore(1)
+        self._pool = gevent.pool.Pool()
         self._counter = collections.Counter()
         self._uniq_counter = collections.defaultdict(set)
         self._print_interval = 1.0
@@ -90,15 +92,14 @@ class BenchBase(object):
         workers = []
         if send_curve:
             for idx in xrange(send_curve.count()):
-                workers.append(gevent.spawn(self._make_worker(send_curve, idx, self.send), idx))
+                self._pool.spawn(self._make_worker(send_curve, idx, self.send), idx)
         if recv_curve:
             for idx in xrange(recv_curve.count()):
-                workers.append(gevent.spawn(self._make_worker(recv_curve, idx, self.recv), idx))
+                self._pool.spawn(self._make_worker(recv_curve, idx, self.recv), idx)
         if print_interval > 0:
             self._print_interval = print_interval
-            workers.append(gevent.spawn(self._print_loop))
+            self._pool.spawn(self._print_loop)
         for func in self._addition_worker_on_start():
-            workers.append(gevent.spawn(func))
+            self._pool.spawn(func)
         self._add_signal_support()
-        gevent.joinall(workers)
-
+        self._pool.join()
