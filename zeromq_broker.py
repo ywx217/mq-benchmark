@@ -55,5 +55,9 @@ class Broker(gate.DealerRouterGate):
 
 
 if __name__ == '__main__':
+    import cProfile
     args = parse_args()
-    Broker(args.ip, args.port, args.life_time).run()
+    p = cProfile.Profile()
+    broker = Broker(args.ip, args.port, args.life_time)
+    p.runcall(broker.run)
+    p.dump_stats('prof.prof')

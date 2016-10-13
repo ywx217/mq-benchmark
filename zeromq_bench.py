@@ -13,11 +13,11 @@ def parse_args():
     import argparse
     p = argparse.ArgumentParser()
     p.add_argument('--ip', type=str, default=get_my_ip(), help='self host name')
-    p.add_argument('--recv-port', type=str, default=0, help='self receive port')
-    p.add_argument('--send-port', type=str, default=0, help='self send port')
+    p.add_argument('--recv-port', type=int, default=0, help='self receive port')
+    p.add_argument('--send-port', type=int, default=0, help='self send port')
     p.add_argument('--host', '-H', type=str, default='localhost', help='zmq rpc broker host')
     p.add_argument('--port', '-p', type=int, default=55666, help='zmq rpc broker port')
-    p.add_argument('--receivers', '-r', type=int, default=10, help='receiver count')
+    p.add_argument('--receivers', '-r', type=int, default=1, help='receiver count')
     p.add_argument('--senders', '-s', type=int, default=100, help='sender count')
     g = p.add_mutually_exclusive_group()
     g.add_argument('--bin', action='store_true', help='use compressed binary test data')
@@ -55,7 +55,7 @@ class Receiver(gate.DealerRouterGate):
 
     def _run(self):
         while self._benchmark.is_running():
-            self.poll(0)
+            self.poll(1)
             gevent.sleep(0.01)
 
     def spawn_all(self):
@@ -81,7 +81,7 @@ class ZeroMQBench(bench_base.BenchBase):
             while self._running_flag:
                 self._sender.send(self._broker_addr, msgpack.packb(('work', self._data)))
                 self.record('send')
-                gevent.sleep(1.0)
+                gevent.sleep(0.1)
         finally:
             self.record_uniq('n_sender', worker_idx, remove=True)
 
