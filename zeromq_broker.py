@@ -1,5 +1,6 @@
 import collections
 import random
+import time
 
 import msgpack
 
@@ -14,6 +15,7 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('--ip', type=str, default=get_my_ip(), help='self host name')
     p.add_argument('--port', '-p', type=int, default=55666, help='broker port')
+    p.add_argument('--life-time', '-l', type=int, default=0, help='lifetime in seconds, 0 is live forever')
     return p.parse_args()
 
 
@@ -24,10 +26,14 @@ def get_my_ip():
 
 class Broker(gate.DealerRouterGate):
     # send workload to a random receiver
-    def __init__(self, my_ip, port):
+    def __init__(self, my_ip, port, life_time=0):
         super(Broker, self).__init__(my_ip, port)
         self._registered_receivers = set()
         self._pending_queue = collections.deque()
+        if life_time > 0:
+            self._death_time = time.time() + life_time
+        else:
+            self._death_time = 0
 
     def _dispatch_rpc(self, source_addr, payload):
         method, data = msgpack.unpackb(payload)
@@ -44,10 +50,10 @@ class Broker(gate.DealerRouterGate):
             self._pending_queue.clear()
 
     def run(self):
-        while 1:
+        while not self._death_time or time.time() < self._death_time:
             self.poll(1)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    Broker(args.ip, args.port).run()
+    Broker(args.ip, args.port, args.life_time).run()
