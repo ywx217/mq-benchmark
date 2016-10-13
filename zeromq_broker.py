@@ -16,6 +16,7 @@ def parse_args():
     p.add_argument('--ip', type=str, default=get_my_ip(), help='self host name')
     p.add_argument('--port', '-p', type=int, default=55666, help='broker port')
     p.add_argument('--life-time', '-l', type=int, default=0, help='lifetime in seconds, 0 is live forever')
+    p.add_argument('--profile', action='store_true', help='open profile')
     return p.parse_args()
 
 
@@ -54,10 +55,17 @@ class Broker(gate.DealerRouterGate):
             self.poll(1)
 
 
-if __name__ == '__main__':
+def prof_run(func):
     import cProfile
-    args = parse_args()
     p = cProfile.Profile()
-    broker = Broker(args.ip, args.port, args.life_time)
-    p.runcall(broker.run)
+    p.runcall(func)
     p.dump_stats('prof.prof')
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    broker = Broker(args.ip, args.port, args.life_time)
+    if args.profile:
+        prof_run(broker.run)
+    else:
+        broker.run()
