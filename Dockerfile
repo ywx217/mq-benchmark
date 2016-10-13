@@ -20,4 +20,5 @@ RUN pip install \
 WORKDIR /python
 COPY ./*.py /python/
 COPY ./_queue_data.base64 /python/
+COPY ./zeroactor /python/
 
