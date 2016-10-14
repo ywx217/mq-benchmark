@@ -33,6 +33,7 @@ class Broker(gate.RouterRouterGate):
         super(Broker, self).__init__(my_ip, port)
         self._registered_receivers = {}
         self._pending_queue = collections.deque()
+        self._recv_count = 0
         if life_time > 0:
             self._death_time = time.time() + life_time
         else:
@@ -52,6 +53,7 @@ class Broker(gate.RouterRouterGate):
             recv_list = list(self._registered_receivers)
             for workload in self._pending_queue:
                 self.send(random.choice(recv_list), workload)
+            self._recv_count += len(self._pending_queue)
             self._pending_queue.clear()
 
     @property
@@ -65,12 +67,13 @@ class Broker(gate.RouterRouterGate):
 
     def _queue_monitor(self):
         while self.is_alive:
-            gevent.sleep(5)
-            print '[%s] recv=%s queue=%s' % (
+            gevent.sleep(1)
+            print '[%s] recv=%s count=%s' % (
                 time.strftime('%Y-%m-%d %H:%M:%S'),
                 len(self._registered_receivers),
-                len(self._pending_queue)
+                self._recv_count
             )
+            self._recv_count = 0
 
     def _remove_timeout_brokers(self):
         while self.is_alive:
