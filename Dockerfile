@@ -22,5 +22,5 @@ WORKDIR /python
 COPY ./*.py /python/
 COPY ./*.sh /python/
 COPY ./_queue_data.base64 /python/
-COPY ./zeroactor /python/
-
+COPY ./zeroactor /python/zeroactor
+RUN chmod +x /python/run.sh
