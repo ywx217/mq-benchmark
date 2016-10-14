@@ -6,7 +6,7 @@ function usage(){
 	echo "$0 runss process_num base_port"
 }
 
-if [ $# < 1 ]; then
+if [ $# -lt 1 ]; then
 	usage
 	exit 1
 fi
@@ -16,7 +16,7 @@ if [ $1 = 'kill' ]; then
 fi
 
 if [ $1 = 'run' ]; then
-	if [ $# < 3 ]; then
+	if [ $# -lt 3 ]; then
 		usage
 		exit 2
 	fi
