@@ -31,7 +31,7 @@ if [ $1 = 'run' ]; then
 elif [ $1 = 'runss' ]; then
 	proc_num=$2
 	base_port=$3
-	for port in $(seq base_port 1 $((base_port + proc_num - 1))); do
+	for port in $(seq $base_port 1 $((base_port + proc_num - 1))); do
 		python zeromq_bench.py --host $BROKER_IP --port 19600 --bin --ip ${IP} --my-port $port > "bench_${port}.log"
 	done
 else
