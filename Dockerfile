@@ -3,6 +3,7 @@ MAINTAINER Wenxuan Yang "ywx217@gmail.com"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        vim \
         python2.7 \
         python-dev \
         python-gevent \
