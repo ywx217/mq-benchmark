@@ -16,6 +16,7 @@ fi
 
 if [ $1 = 'kill' ]; then
 	ps aux | grep bench | grep -v grep | awk '{print $2}' | xargs kill
+	exit 0
 fi
 
 if [ $1 = 'run' ]; then
@@ -26,13 +27,15 @@ if [ $1 = 'run' ]; then
 	proc_num=$2
 	base_port=$3
 	for port in $(seq $base_port 2 $((base_port + (proc_num-1)*2))); do
-		python zeromq_bench.py --host $BROKER_IP --port 19600 --bin --ip ${IP} --recv-port $port --send-port $((port+1)) > "bench_${port}.log"
+		python zeromq_bench.py --host $BROKER_IP --port 19600 --bin --ip ${IP} --recv-port $port --send-port $((port+1)) > "bench_${port}.log" &
+		sleep 1
 	done
 elif [ $1 = 'runrr' ]; then
 	proc_num=$2
 	base_port=$3
 	for port in $(seq $base_port 1 $((base_port + proc_num - 1))); do
-		python zeromq_rr_bench.py --host $BROKER_IP --port 19600 --bin --ip ${IP} --my-port $port > "bench_${port}.log"
+		python zeromq_rr_bench.py --host $BROKER_IP --port 19600 --bin --ip ${IP} --my-port $port > "bench_${port}.log" &
+		sleep 1
 	done
 else
 	usage
