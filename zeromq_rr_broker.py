@@ -67,11 +67,11 @@ class Broker(gate.RouterRouterGate):
 
     def _queue_monitor(self):
         while self.is_alive:
-            gevent.sleep(1)
-            print '[%s] recv=%s count=%s' % (
+            gevent.sleep(5)
+            print '[%s] recv=%s count=%s/s' % (
                 time.strftime('%Y-%m-%d %H:%M:%S'),
                 len(self._registered_receivers),
-                self._recv_count
+                self._recv_count / 5,
             )
             self._recv_count = 0
 
